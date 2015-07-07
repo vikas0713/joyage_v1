@@ -1,0 +1,301 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% block extra_head %}
+
+
+    {% include "top_bar.html" %}
+{% endblock %}
+
+{% block body %}
+    <div class="container" style="margin-top: 6%;" >
+        <div class="row">
+           <div class="col-md-8 text-center text-uppercase">
+                  <h4>{{ activity_details.title }}</h4><br>
+
+           </div>
+            <div class="col-md-4 col-md-12 text-center">
+{#                <h4><strong>{{ user_count }}</strong> People(s) Attending this</h4>#}
+            </div>
+        </div>
+        <br><br>
+        <div class="row">
+            <div class="col-md-8">
+              <div class="content-article">
+                    <img src="/{{ activity_details.image_url }}" class="img-responsive img-rounded" alt="about last sunday" style="margin: auto;">
+                    <br>
+              </div>
+            </div>
+
+            <div class="col-md-1"></div>
+
+            <div class="col-md-3">
+              <!-- begin:sidebar--------------------------------------------------------------------------- -->
+              <div class="content-article">
+
+                  <div class="row">
+                  <div class="col-md-12 col-sm-12 col-xs-12 divider text-center">
+
+                      <h4 class="side-title ">{{ activity_details.venue }}</h4>
+                      <small >{{ activity_details.neighborhood}}</small>
+                  </div>
+
+
+                  <div class="col-md-12 col-sm-12 col-xs-12 divider text-center">
+                      <h4 class="side-title text-center">{{ activity_details.date }}</h4>
+                      <small class="text-center">{{ activity_details.start_time }}</small>
+                  </div>
+
+                  <div class="col-md-12 col-sm-12 col-xs-12 divider text-center">
+                      <h4 class="side-title text-center">{{ activity_details.price_unit|default:"" }} {{ activity_details.price|default:"" }}</h4>
+                      <small class="text-center">per person</small>
+                  </div>
+
+
+                  <div class="col-md-12 col-sm-12 col-xs-12 divider text-center">
+                  {% if activity_completed %}
+                      <button class="btn btn-disabled">Activity Completed</button><br>
+                      {% if user_activity.is_attended %}
+                                 <i class="fa fa-check">You Attended this Activity</i>
+                          {% endif %}
+
+                  {% else %}
+
+                      {% if activity_details.is_available %}
+                          {% if user.is_authenticated %}
+                                {% if user_activity.is_going %}
+                                   <i class="fa fa-check text-center">You're Going</i>
+                                   <a href="#" id="buy" class="btn btn-default text-center">{# class="joy-background"|by default #}
+
+                             Buy More Tickets
+                          </a>
+                              {% else %}
+                          <a href="/book/{{ activity_details.id }}/" id="buy" class="btn btn-default">{# class="joy-background"|by default #}
+
+                             Buy Tickets
+                          </a>
+                                   {% endif %}
+
+                              {% else %}
+                              <a class="btn btn-default" id="login" data-toggle="dropdown">Login To Buy Tickets</a>
+                              {% endif %}
+                          {% else %}
+                          {% if activity_details.is_completed %}
+                              <h4 class="side-title text-center"><i class="fa fa-calender-o">ACTIVITY OVER</i></h4><br>
+                              {% else %}
+                          <h4 class="side-title text-center"><i class="fa fa-warning">TICKETS NOT AVAILABLE</i></h4><br>
+                      {% endif %}
+                          {% endif %}
+                  {% endif %}
+                  </div>
+                  </div>
+
+              </div>
+            </div>
+        </div>
+        {#  Row end ---------------------------------------------------------------------------------------#}
+        <div class="row">
+            <div class="col-md-8">
+              <div class="content-article">
+                    <ul class="nav nav-justified bottom-line">
+                        <li class="active"><a href="#tab1" data-toggle="tab">DESCRIPTION</a></li>
+                        <li><a href="#tab2" data-toggle="tab">CONTACT</a></li>
+                        <li><a href="#tab3" data-toggle="tab">REVIEWS</a></li>
+                    </ul>
+
+                    <br><br>
+                    <div class="tab-content text-left">
+                        <div class="tab-pane active" id="tab1">
+                          <p> {{ activity_details.description|safe }}</p>
+                        </div>
+                        <div class="tab-pane" id="tab2">
+                          {{ activity_details.contact_number|safe }}
+                        </div>
+{#                    testimonials or reviews come here                              #}
+                        <div class="tab-pane " id="tab3">
+                        <div class="content mCustomScrollbar">
+
+
+                            {# new box for reviews #}
+
+  <div class="bubble-list responsive" >
+      <div class="bubble clearfix nano responsive" >
+      {% if testimonials %}
+          {% for t in testimonials %}
+       <img src="{{ t.image_url }}">
+       <div class="bubble-content responsive" >
+{#         <div class="point"></div>#}
+          <p><strong class="text-primary">{{ t.user|title }}</strong> :"{{ t.testimonial }}"</p>
+          <small class="pull-right text-muted">-<i>On {{ t.time }}</i></small>
+       </div>
+              <br><br>
+          {% endfor %}
+      {% else%}
+          {% if user_activity.is_attended %}
+       <h4 class="text-center">No Reviews Yet! Be the first.</h4>
+              {% else %}
+       <h4 class="text-center">You Had not attended this activity.</h4>
+
+              {% endif %}
+      {% endif %}
+      </div>
+  {% if user.is_authenticated %}
+      {% if activity_details.is_completed %}
+    <form action="/reviews/add/{{ activity_details.id }}/" method="post">
+    {% csrf_token %}
+
+        {% if user.is_superuser %}
+            <input type="hidden" name="image" value="/site_media/static/images/default_pic.png">
+        {% else %}
+            <input type="hidden" name="image" value="{{ user.socialaccount_set.all.0.get_avatar_url }}">
+        {% endif %}
+        {% if user_activity.is_attended %}
+            <textarea class="form-control" name="testimonial" placeholder="Share Your Thoughts"></textarea>
+        <input type="submit" class="btn btn-sm btn-success" value="Post">
+        {% endif %}
+    </form>
+          {% endif %}
+  {% endif %}
+      </div>
+
+
+{#                          <form action="/reviews/add/{{ activity_details.id }}/" method="post">#}
+{##}
+{##}
+{#                              <div class="row">#}
+{#                                  <div class="col-md-4 col-sm-12">#}
+{#                                {% if user.is_superuser %}#}
+{#                                    <img src="/site_media/static/images/default_pic.png" class="img-responsive t-circle block-center">#}
+{#                                {% else %}#}
+{#                                    <img src="{{ user.socialaccount_set.all.0.get_avatar_url }}" class="img-responsive t-circle block-center">#}
+{#                                {% endif %}#}
+{##}
+                            {# box ends here #}
+{#                            <div class="row">#}
+{#                            <div class="col-md-2">#}
+{#                                <img src="{{ testimonial.image_url }}" class="img-responsive t-circle block-center">#}
+{#                                <h5 class="text-primary text-center">{{ testimonial.user }}</h5>#}
+{#                                <h5 class="text-muted text-center">{{ testimonial.time }}</h5>#}
+{#                            </div>#}
+{#                            <div class="col-md-10">#}
+{#                                <blockquote><p>{{ testimonial.testimonial }}</p></blockquote>#}
+{#                                <hr>#}
+{#                            </div>#}
+{#                            </div>#}
+{#                        {% endfor %}#}
+{##}
+{#                                    <h5 class="text-primary text-center">{{ request.user }}</h5>#}
+{#                                  </div>#}
+{#                                  <div class="col-md-8 col-sm-12">#}
+{#                               <textarea class="form-control" cols="50" id="id_testimonial" name="testimonial" rows="4" placeholder="Share Your Thoughts">#}
+{#                               </textarea>#}
+{#                                  </div>#}
+{#                                  </div>#}
+{#                             <input type="submit"  value="Post" class="btn btn-success btn-lg pull-right">#}
+{#                          </form>#}
+{#                        {% endif %}#}
+                        </div>
+                        </div>
+                    </div>
+
+              </div>
+            </div>
+
+            <div class="col-md-1"></div>
+
+            <div class="col-md-3">
+              <!-- begin:sidebar--------------------------------------------------------------------------- -->
+              <div class="content-article">
+
+                  <div class="row">
+                  <div class="col-md-12 col-sm-12 col-xs-12 divider text-center">
+                      {% if user_activity.is_bookmarked %}
+                          <a href="" class="btn btn-secondary " title="You Bookmarked this"><i class="fa fa-check-square gray"></i></a><br>
+
+                      {% else %}
+                      <a href="/bookmark/{{ activity_details.id }}/" class="btn btn-secondary " title="Bookmark"><i class="fa fa-bookmark-o fa-2x gray"></i></a>
+                      {% endif %}
+                          <a href="#page-top" class="btn btn-secondary " title="Share"><i class="fa fa-share-alt fa-2x gray"></i></a>
+
+                          <a href="#page-top" class="btn btn-secondary " title="Report Abuse"><i class="fa fa-angle-down fa-2x gray"></i></a>
+
+                  </div>
+                  <div class="row mCustomScrollbar " data-mcs-theme="dark">
+                  {% if peoples_attending %}
+
+                      {% for user in peoples_attending %}
+                      <div class="col-md-12 col-sm-12 col-xs-12">
+                      <img src="{{ user.image_url }}" class="img-circle pull-left" width="60" height="60">
+                      <h4 class="pull-left">{{ user.user  }} is going </h4>
+
+                      {% endfor %}
+                      </div>
+                  {% endif %}
+                   </div>
+
+
+{#                  <div class="col-md-12 col-sm-4 col-xs-4 divider">#}
+{#                      <a href="#page-top" class="btn btn-secondary circle"><i class="fa fa-share-alt gray"></i></a><br>#}
+{#                      <small>Share</small>#}
+{#                  </div>#}
+{##}
+{##}
+{#                  <div class="col-md-12 col-sm-4 col-xs-4 divider">#}
+{#                      <a href="#page-top" class="btn btn-secondary circle"><i class="fa fa-angle-down gray"></i></a><br>#}
+{#                      <small>Report problem</small>#}
+{#                  </div>#}
+{#                  </div>#}
+
+              </div>
+            </div>
+
+        </div>
+
+
+        <div class="row">
+            <br><br>
+            <div class="col-md-12 text-center">
+                <a href="/" class="text-uppercase">BACK TO HOME PAGE</a>
+            </div>
+        </div>
+    </div>
+
+
+{% endblock %}
+
+
+ {% block extra_js %}
+
+
+{#<script src="{% static "js/jquery-1.11.0.min.js"%}"></script>#}
+<script>
+
+</script>
+
+<script type="text/javascript">
+
+
+    (function($){
+        $(window).load(function(){
+            $(".people").mCustomScrollbar();
+        });
+    })(jQuery);
+
+
+{#       $.ajax({#}
+{#        url: '/book/',#}
+{#        type: 'GET',#}
+{#        data: { "user": "{{ user.id }}"} ,#}
+{#        contentType: 'application/json; charset=utf-8',#}
+{#        success: function (response) {#}
+{#            console.log(response)#}
+{#            //your success code#}
+{#        },#}
+{#        error: function () {#}
+{#            console.log("error")#}
+{#            //your error code#}
+{#        }#}
+{#    });#}
+{#    })#}
+    </script>
+
+        {% endblock %}

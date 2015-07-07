@@ -1,0 +1,241 @@
+{% extends "base.html" %}
+{%  load staticfiles %}
+{% load socialaccount %}
+{% block extra_head %}
+
+    <style>
+        .remove-shadow{
+            webkit-box-shadow: none !important;
+            box-shadow: none !important;
+        }
+    </style>
+    {%  if user.is_authenticated %}
+        <div class="pull-right">
+{#        <img src="/{{ user.socialaccount_set.all.0.get_avatar_url }}" class="img-circle img-responsive  pull-right" width="50px" height="50px" />#}
+        <a href="/accounts/logout/" class="btn btn-sign-in pull-right">Logout</a>
+            {% if user.is_superuser %}
+        <a href="/add/" class="btn btn-sign-in pull-right">Add Activity</a>
+                {% endif %}
+        <a href="/profile/{{ user.id }}"><h5 class="pull-right btn btn-sign-in ">{{ user.first_name }}</h5></a>
+
+        </div>
+    {% else %}
+        <div class="container">
+            <div class="dropdown pull-right">
+              <a type="button" class="btn " data-toggle="dropdown">Login</a>
+
+              <div class="dropdown-menu" style="padding: 10px; background: #fff">
+
+                <a href="{% provider_login_url "facebook" method="oauth2" %}" class="btn btn-sign-in block-center" id="opener">
+                    <img src="{% static "images/fb.png"%}" width="100" height="100">
+                </a>
+                  <a href="{% provider_login_url "google" method="oauth2" %}" class="btn btn-sign-in  block-center" id="opener">
+                    <img src="{% static "images/google.png"%}" width="100" height="100">
+                </a>
+              </div>
+            </div>
+        </div>
+    {%  endif  %}
+{% endblock %}
+
+
+{% block body %}
+
+
+    <div class="container" style="margin-top: 5%;">
+        <div class="text-center"><img src="{% static "images/logo.png"%}"></div>
+        <div class="tagline-wrapper">LET'S DO SOMETHING NEW TODAY</div>
+
+        <div class="container">
+            <div class="row">
+                <div class="col-md-3"></div>
+                <div class="col-md-6 tabs">
+                    <ul class="nav nav-justified bottom-line top-menu ">
+                        <li class="active"><a href="#tab1" data-toggle="tab" aria-controls="tab1"><h5>FRESH PICKS</h5></a></li>
+                        <li><a href="#tab2" data-toggle="tab" role="tab" aria-controls="tab2"><h5>UPCOMING</h5></a></li>
+                        {% if user.is_authenticated %}
+                        <li><a href="#tab3" data-toggle="tab" role="tab" aria-controls="tab3"><h5>RECENTLY CONCLUDED</h5></a></li>
+    {#                    <li><a href="#">POPULAR</a></li>#}
+                        {% endif %}
+                    </ul>
+                    <span class="line"></span>
+                </div>
+                <div class="col-md-3"></div>
+            </div>
+        </div>
+    </div>
+
+
+    <br/><br />
+
+    <div class="container" id="content-grid">
+      <div class="tab-content text-left" >
+        <div class="tab-pane active" id="tab1" role="tabpanel">
+        {% for activity in activity_list %}
+
+          <div class="grid-item">
+              <a href="{% url 'activity_details' activity.id %}" >
+              <img src="/{{activity.image_url}}" title="{{ activity.title }}" class="img-responsive" alt="{{ activity.title }}">
+              <h4 class="text-uppercase">{{activity.title}}</h4>
+              <small class="text-muted">{{activity.city}} {% if activity.price %} | {{ activity.price_unit|default:"" }} {{activity.price}} {% endif %}
+                  {% if activity.date %} | {{activity.date}} {% endif %}</small>
+              </a>
+          </div>
+        {% endfor %}
+        </div>
+      <div class="tab-pane" id="tab2">
+{#          not masonry    #}
+                <div id="wrapper">
+	<div id="columns">
+    {% for i in 'xxxx' %}
+        {% for activity in activity_list %}
+		<div class="pin">
+        <a href="/view/{{ activity.id }}" id="not-masonry">
+			<img src="/{{ activity.image_url }}" />
+			<p>
+				Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+				Sed feugiat consectetur pellentesque. Nam ac elit risus,
+				ac blandit dui. Duis rutrum porta tortor ut convallis.
+				Duis rutrum porta tortor ut convallis.
+			</p>
+            </a>
+		</div>
+        {% endfor %}
+    {% endfor %}
+
+	</div>
+</div>
+{#          not masonry ends here #}
+          </div>
+      {% if user.is_authenticated %}
+      <div class="tab-pane " id="tab3">
+          <div class="container">
+              {% for activity in activity_list %}
+              <div class="col-md-3 rec-conc">
+                <a href="{% url 'activity_details' activity.id %}" >
+              <img src="/{{activity.image_url}}" title="{{ activity.title }}" class="img-responsive" alt="{{ activity.title }}">
+              <h4 class="text-uppercase">{{activity.title}}</h4>
+              <small class="text-muted">{{activity.city}} {% if activity.price %} | {{ activity.price_unit|default:"" }} {{activity.price}} {% endif %}
+                  {% if activity.date %} | {{activity.date}} {% endif %}</small>
+              </a>
+              </div>
+                {% endfor %}
+
+
+          </div>
+          </div>
+      {% endif %}
+      </div>
+    </div>
+    <div class="container">
+{#        <div class="row">#}
+{#            <!-- begin:article -->#}
+{#            <div class="col-md-12">#}
+{#              <!-- begin:blog -->#}
+{#              <div class="content-article">#}
+{#                <div class="row" id="event_base">#}
+{##}
+{#                   {% for activity in activity_list %}#}
+{#                       <div class="col-md-4 col-sm-12 col-xs-12 content-item">#}
+{#                       <a href="{% url 'activity_details' activity.id %}">#}
+{#                            <div class="panel remove-shadow">#}
+{#                            <div class="panel-body">#}
+{#                                <img src="{% static"upload_images/{{activity.image_url}}" class="img-responsive" alt="blog masonry last sunday">#}
+{#                                <h4 class="text-uppercase">{{activity.title}}</h4>#}
+{#                                <small class="text-muted">{{activity.city}} |  {{activity.price}}  | {{activity.date}}</small>#}
+{#                            </div>#}
+{#                            </div>#}
+{#                       </a>#}
+{#                       </div>#}
+{#                   {% endfor %}#}
+{##}
+{#                </div>#}
+{#              </div>#}
+{#              <!-- end:blog -->#}
+{#            </div>#}
+{#            <!-- end:article -->#}
+{#        </div>#}
+        <div class="row text-center">
+            <button id="LoaderImage" class="btn btn-lg btn-warning hide"><i class="icon-spinner icon-spin icon-large"></i></span> Loading...</button>
+        </div>
+    </div>
+
+
+
+{% endblock %}
+
+{% block extra_js %}
+    <script type="text/javascript">
+
+        var $grid = $('#tab1');
+        $grid.imagesLoaded
+
+        var isPreviousEventComplete = true, isDataAvailable = true;
+        var sIndex = "{{index}}";
+
+        $(window).scroll(function () {
+            if ($(document).height() - 50 <= $(window).scrollTop() + $(window).height()) {
+                if (isPreviousEventComplete && isDataAvailable) {
+                    isPreviousEventComplete = false;
+                    $("#LoaderImage").removeClass("hide");
+
+                    $.ajax({
+                      type: "GET",
+                      url: "/"+sIndex,
+                      data: "",
+                      cache: false,
+                      dataType: "json",
+                      success: function (data) {
+                        if (data.length > 0)
+                        {
+                            console.log(data)
+                            for(var i=0;i<data.length;i++)
+                            {
+{#                                var markup = '<div class="col-md-4 col-sm-12 col-xs-12">';#}
+{#                                markup += '<a href="view/'+data[i].id+'">'#}
+{#                                markup += '<div class="panel remove-shadow"> <div class="panel-body">';#}
+{#                                markup += '<img src="{% static"upload_images/'+data[i].image_url+'" class="img-responsive" alt="blog masonry last sunday">';#}
+{#                                markup += '<h4 class="text-uppercase">Responsive Design</h4>';#}
+{#                                markup += '<small class="text-muted">'+data[i].city+'|'+ data[i].price+'|'+data[i].date+'</small>';#}
+{#                                markup += '</div> </div></a></div>';#}
+
+                                var markup = '<div class="grid-item">';
+                                markup += '<a href="view/'+data[i].id+'">';
+                                markup += '<img src="/'+data[i].image_url+'" class="img-responsive" alt="'+data[i].title+'">';
+                                markup += '<h4 class="text-uppercase">'+data[i].title+'</h4>';
+                                markup += '<small class="text-muted">'+data[i].city;
+                                if(data[i].price)
+                                {markup += ' | ' +data[i].price_unit+' '+data[i].price;}
+                                if(data[i].date)
+                                {markup += ' | ' +data[i].date;}
+                                markup += '</small></a></div>';
+
+                                var html = $(markup);
+                                $grid.masonry().append( html ).masonry( 'appended', html ).masonry();
+                                sIndex = data[i].id;
+                            }
+                        }
+                        else
+                        {
+                            isDataAvailable = false;
+                        }
+
+                        isPreviousEventComplete = true;
+
+                        $("#LoaderImage").addClass("hide");
+                      },
+                      error: function (error) {
+                          alert(error);
+                      }
+                    });
+
+                }
+            }
+        });
+
+    $grid.imagesLoaded( function() {
+  $grid.masonry();
+});
+    </script>
+
+{% endblock %}

@@ -1,0 +1,145 @@
+{%  extends 'base.html' %}
+{%  load staticfiles %}
+{% load socialaccount %}
+
+{% block extra_head %}
+
+    {% include "top_bar.html" %}
+    <style>
+        .remove-shadow{
+            webkit-box-shadow: none !important;
+            box-shadow: none !important;
+        }
+    </style>
+{#        <img src="{{ user.socialaccount_set.all.0.get_avatar_url }}" class="img-circle img-responsive  pull-right" width="50px" height="50px" />#}
+
+
+{% endblock %}
+
+{% block body %}
+
+<div class="container" style="margin-top: 5%;">
+        <div >
+            <img src="{{ user.socialaccount_set.all.0.get_avatar_url }}"
+                 class="p-circle img-responsive center-block" width="100" height="100" />
+            <h3 class="text-center text" >{{ request.user|upper }}</h3>
+            {% for account in user.socialaccount_set.all %}
+            {% for i in account.extra_data %}
+                {{ i.gender }}
+
+                {% endfor %}
+            {% endfor %}
+        </div>
+
+        <div class="container">
+            <div class="row">
+                <div class="col-md-3"></div>
+                <div class="col-md-6">
+                    <ul class="nav nav-justified bottom-line top-menu">
+                        <li class="active"><a href="#tab1" data-toggle="tab" aria-controls="tab1">BOOKMARKS</a></li>
+                        <li><a href="#tab2" data-toggle="tab" aria-controls="tab1">DONE</a></li>
+                        <li><a href="#tab3" data-toggle="tab" aria-controls="tab1">GOING</a></li>
+                        <li><a href="#tab4" data-toggle="tab" aria-controls="tab1">HOSTED BY ME</a></li>
+                    </ul>
+                    <span class="line"></span>
+                </div>
+                <div class="col-md-3"></div>
+            </div>
+        </div>
+<br>
+<br>
+    </div>
+
+    <div class="container" id="content-grid">
+        {% for activity in activity_list %}
+
+          <div class="grid-item">
+              <a href="{% url 'activity_details' activity.id %}" >
+              <img src="/{{activity.image_url}}" title="{{ activity.title }}" class="img-responsive" alt="{{ activity.title }}">
+              <h4 class="text-uppercase">{{activity.title}}</h4>
+              <small class="text-muted">{{activity.city}}
+                  {% if activity.price %} | {{ activity.price_unit|default:"" }} {{activity.price}} {% endif %}
+                  {% if activity.date %} | {{activity.date}} {% endif %}
+              </small>
+              </a>
+          </div>
+
+
+        {% endfor %}
+    </div>
+
+
+{% endblock %}
+{% block extra_js %}
+    <script type="text/javascript">
+
+        var $grid = $('#content-grid').masonry({
+            itemSelector: '.grid-item',
+            columnWidth: 70
+        });
+
+        var isPreviousEventComplete = true, isDataAvailable = true;
+        var sIndex = "{{index}}";
+
+        $(window).scroll(function () {
+            if ($(document).height() - 50 <= $(window).scrollTop() + $(window).height()) {
+                if (isPreviousEventComplete && isDataAvailable) {
+                    isPreviousEventComplete = false;
+                    $("#LoaderImage").removeClass("hide");
+
+                    $.ajax({
+                      type: "GET",
+                      url: "/"+sIndex,
+                      data: "",
+                      cache: false,
+                      dataType: "json",
+                      success: function (data) {
+                        if (data.length > 0)
+                        {
+                            console.log(data)
+                            for(var i=0;i<data.length;i++)
+                            {
+{#                                var markup = '<div class="col-md-4 col-sm-12 col-xs-12">';#}
+{#                                markup += '<a href="view/'+data[i].id+'">'#}
+{#                                markup += '<div class="panel remove-shadow"> <div class="panel-body">';#}
+{#                                markup += '<img src="{% static"upload_images/'+data[i].image_url+'" class="img-responsive" alt="blog masonry last sunday">';#}
+{#                                markup += '<h4 class="text-uppercase">Responsive Design</h4>';#}
+{#                                markup += '<small class="text-muted">'+data[i].city+'|'+ data[i].price+'|'+data[i].date+'</small>';#}
+{#                                markup += '</div> </div></a></div>';#}
+
+                                var markup = '<div class="grid-item">';
+                                markup += '<a href="view/'+data[i].id+'">';
+                                markup += '<img src=/'+data[i].image_url+' class="img-responsive" alt="'+data[i].title+'">';
+                                markup += '<h4 class="text-uppercase">'+data[i].title+'</h4>';
+                                markup += '<small class="text-muted">'+data[i].city;
+                                if(data[i].price)
+                                {markup += ' | ' +data[i].price_unit+' '+data[i].price;}
+                                if(data[i].date)
+                                {markup += ' | ' +data[i].date;}
+                                markup += '</small></a></div>';
+
+                                var html = $(markup);
+                                $grid.masonry().append( html ).masonry( 'appended', html ).masonry();
+                                sIndex = data[i].id;
+                            }
+                        }
+                        else
+                        {
+                            isDataAvailable = false;
+                        }
+
+                        isPreviousEventComplete = true;
+
+                        $("#LoaderImage").addClass("hide");
+                      },
+                      error: function (error) {
+                          alert(error);
+                      }
+                    });
+
+                }
+            }
+        });
+
+    </script>
+{% endblock %}

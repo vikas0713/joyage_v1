@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% block extra_head %}
+    {% include "top_bar.html" %}
+{% endblock %}
+{% block form %}
+{% load bootstrap %}
+<div class="container mybody">
+<!-- begin:tagline -->
+    <h2 class="text-center">LET'S DO SOMETHING NEW TODAY</h2>
+      <div class="row">
+        <div class="col-md-offset-2 col-md-8">
+          <form action="/add/" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+              {{ form|bootstrap }}
+              <input type="submit" name='submit' value="Post" class="btn btn-success btn-lg">
+            </form>
+
+        </div>
+      </div>
+    {% block extra_js %}
+        </div>
+                <div id="datetime" class="col-md-2"></div>
+            </div>
+        <script type="text/javascript">
+
+			$(document).ready(function()
+			{
+				$("#datetime").DateTimePicker({
+
+					dateFormat: "yyy-MM-dd",
+					timeFormat: "HH:mm",
+
+				});
+                $('#datepicker').datepicker();
+			});
+
+		</script>
+        <script>
+        function readURL(input) {
+
+    if (input.files && input.files[0]) {
+        var reader = new FileReader();
+
+        reader.onload = function (e) {
+            $('#divImg').remove();
+            $("#img").after('<img id="divImg" src=# width=200 height=180>');
+            $('#divImg').attr('src', e.target.result);
+        }
+
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+        $("#img").change(function(){
+             readURL(this);
+        });
+
+
+        </script>
+     {% endblock %}
+      <!-- end:tagline -->
+</div>
+{% endblock %}
